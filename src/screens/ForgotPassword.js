@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import axiosClient from "../http/axiosClient";
 import { useNavigate } from "react-router-dom";
 
 export const ForgotPassword = (props) => {
@@ -19,7 +19,7 @@ export const ForgotPassword = (props) => {
   async function sentForum(event) {
     event.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8000/send-email", {
+      const response = await axiosClient.post("/send-email", {
         to: email,
       });
 

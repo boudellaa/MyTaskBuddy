@@ -4,13 +4,28 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import ContextWrapper from "./context/ContextWrapper";
+import { createClient } from "@supabase/supabase-js";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { NotificationsProvider } from "./context/NotificationsContext";
+
+const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL
+const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY
+
+const supabaseClient = createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+)
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <ContextWrapper>
-      <App />
-    </ContextWrapper>
+    <NotificationsProvider>
+      <SessionContextProvider supabaseClient={supabaseClient}>
+        <ContextWrapper>
+          <App />
+        </ContextWrapper>
+      </SessionContextProvider>
+    </NotificationsProvider>
   </React.StrictMode>
 );
 

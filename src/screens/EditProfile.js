@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axiosClient from "../http/axiosClient";
 import MenuBarHP from "../components/MenuBarHP";
+import { useSession } from "@supabase/auth-helpers-react";
 
 const EditProfile = () => {
   const [firstname, setFirstName] = useState("");
@@ -10,18 +11,20 @@ const EditProfile = () => {
   const [newPassword, setNewPassword] = useState("");
 
   const parentId = localStorage.getItem("parentId"); // Assuming you have the parentId available
+  const googleId = localStorage.getItem("googleId");
+  const session = useSession()
 
   useEffect(() => {
     // Fetch user data using parentId and update the state
     const fetchUserData = async () => {
       try {
-        if (!parentId) {
+        if (!parentId && !googleId) {
           window.location.replace("/login");
         } else {
-          const response = await fetch(
-            `http://localhost:8000/parents/${parentId}`
+          const response = await axiosClient.get(
+            `/parents/${parentId}`
           ); // Replace with your actual API endpoint
-          const userData = await response.json();
+          const userData = response.data
           setFirstName(userData.firstname);
           setLastName(userData.lastname);
           setEmail(userData.email);
@@ -32,15 +35,15 @@ const EditProfile = () => {
     };
 
     fetchUserData();
-  }, [parentId]);
+  }, [parentId, googleId]);
 
   const handleSaveChanges = async () => {
     if (!newEmail && !newPassword) {
       alert("Prazna polja!");
     }
     try {
-      const response = await axios.put(
-        `http://localhost:8000/parents/${parentId}`,
+      const response = await axiosClient.put(
+        `/parents/${parentId}`,
         {
           email: newEmail,
           password: newPassword,
@@ -97,7 +100,6 @@ const EditProfile = () => {
                 </h4>
 
                 <div className="row mt-4"></div>
-
                 <div className="row mt-3">
                   <div className="col-md-12">
                     <label className="labels" style={{ color: "black" }}>
@@ -122,6 +124,7 @@ const EditProfile = () => {
                       type="password"
                       className="form-control"
                       placeholder="Unesite novu lozinku"
+                      autoComplete="new-password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       style={{ color: "black" }}

@@ -1,0 +1,30 @@
+.sidebarContainer {
+    display: flex;
+    flex-direction: column;
+    width: 20%;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+@media screen and (max-width: 1350px) {
+    .sidebarContainer {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 560px) {
+    .sidebarContainer {
+        display: flex;
+        width: 100%;
+    }
+}
+
+/* const sidebarStyle = {
+    padding: "-20px",
+    width: "220px",
+    position: "fixed",
+    top: "20px",
+    left: "5px",
+    height: "100vh",
+    marginLeft: "20px",
+  }; */

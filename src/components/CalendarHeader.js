@@ -35,7 +35,7 @@ function CalendarHeader() {
   }
   return (
     <header
-      className="px-4 py-2 flex flex-col items-center"
+      className="calendarHeader px-4 py-2 flex flex-col items-center"
       style={{ marginTop: "50px" }}
     >
       <div className="flex items-center">

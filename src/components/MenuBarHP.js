@@ -1,8 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import NotificationsList from "./NotificationsList";
+import "../css/menubar.css";
+import { useNotifications } from "../context/NotificationsContext";
 
 const MenuBar = () => {
+  const supabase = useSupabaseClient();
   const [hoveredLink, setHoveredLink] = useState(null);
+  const [areNotificationsOpen, setAreNotificationsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { notifications } = useNotifications()
+  const [notificationCount, setNotificationCount] = useState(0)
+
+  useEffect(() => {
+    setNotificationCount(notifications.length)
+  }, [notifications])
+
+  const handleNotificationsOpen = () => {
+    setAreNotificationsOpen(true);
+  };
+
+  const handleNotificationsClose = () => {
+    setAreNotificationsOpen(false);
+  };
 
   const handleHover = (index) => {
     setHoveredLink(index);
@@ -12,116 +33,101 @@ const MenuBar = () => {
     setHoveredLink(null);
   };
 
-  const getLinkStyle = (index) => {
-    const baseStyle = {
-      textDecoration: "none",
-      color: "#000",
-      transition: "color 0.3s",
-    };
+  const handleLogout = async () => {
+    localStorage.removeItem('googleId');
+    localStorage.removeItem("parentId");
 
-    if (index === hoveredLink) {
-      return { ...baseStyle, color: "blue" };
-    }
-
-    return baseStyle;
+    await supabase.auth.signOut().then(() => {
+      localStorage.removeItem('sb-svlrsvxrzxkqrhhpwkzw-auth-token');
+      localStorage.removeItem('token');
+      window.location.replace("/login");
+    });
   };
 
-  const handleLogout = () => {
-    // Perform logout logic here
-    // Redirect to the login screen
-    localStorage.removeItem("parentId");
-    window.location.replace("/login");
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
-    <nav
-      style={{
-        backgroundColor: "#f8f9fa",
-        padding: "10px 20px",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}
-    >
-      <Link
-        to={"/homepage"}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          textDecoration: "none",
-          color: "#000",
-        }}
-      >
-        <img
-          src="/assets/images/logo.png"
-          alt="MyTaskBuddy Logo"
-          width="30"
-          height="30"
-          style={{ marginRight: "10px" }}
-        />
-        <span style={{ fontWeight: "bold", fontSize: "20px" }}>
-          MyTaskBuddy
-        </span>
-      </Link>
+    <>
+      <nav className="navbar">
+        <Link to={"/homepage"} className="navbar-brand">
+          <img src="/assets/images/logo.png" alt="MyTaskBuddy Logo" width="30" height="30" />
+          <span>MyTaskBuddy</span>
+        </Link>
 
-      <ul
-        style={{
-          display: "flex",
-          listStyle: "none",
-          margin: 0,
-          padding: 0,
-        }}
-      >
-        <li style={{ marginRight: "35px" }}>
-          <Link
-            to={"/homepage"}
-            style={getLinkStyle(0)}
-            onMouseEnter={() => handleHover(0)}
-            onMouseLeave={handleLeave}
-          >
-            Početna
-          </Link>
-        </li>
-        <li style={{ marginRight: "35px" }}>
-          <Link
-            to={"/editprofile"}
-            style={getLinkStyle(1)}
-            onMouseEnter={() => handleHover(1)}
-            onMouseLeave={handleLeave}
-          >
-            Profil
-          </Link>
-        </li>
-        <li style={{ marginRight: "35px" }}>
-          <Link
-            to={"/statistics"}
-            style={{
-              ...getLinkStyle(2),
-              fontWeight: "bold",
-            }}
-            onMouseEnter={() => handleHover(2)}
-            onMouseLeave={handleLeave}
-          >
-            Statistika
-          </Link>
-        </li>
-        <li>
-          <a
-            href="/login"
-            style={getLinkStyle(3)}
-            onMouseEnter={() => handleHover(3)}
-            onMouseLeave={handleLeave}
-            onClick={handleLogout}
-          >
-            ODJAVA
-          </a>
-        </li>
-      </ul>
-    </nav>
+        <div className={`navbar-menu ${isMenuOpen ? "open" : ""}`}>
+          <li>
+            <Link
+              to={"/homepage"}
+              className={hoveredLink === 0 ? "active" : ""}
+              onMouseEnter={() => handleHover(0)}
+              onMouseLeave={handleLeave}
+            >
+              Početna
+            </Link>
+          </li>
+          <li>
+            <Link
+              to={"/editprofile"}
+              className={hoveredLink === 1 ? "active" : ""}
+              onMouseEnter={() => handleHover(1)}
+              onMouseLeave={handleLeave}
+            >
+              Profil
+            </Link>
+          </li>
+          <li>
+            <Link
+              to={"/statistics"}
+              className={hoveredLink === 2 ? "active" : ""}
+              onMouseEnter={() => handleHover(2)}
+              onMouseLeave={handleLeave}
+            >
+              Statistika
+            </Link>
+          </li>
+          <li>
+            <Link
+              to={"#"}
+              className={hoveredLink === 3 ? "active" : ""}
+              onMouseEnter={() => handleHover(3)}
+              onMouseLeave={handleLeave}
+              onClick={handleNotificationsOpen}
+            >
+              <div className="notificationText">
+                Notifikacije
+                <div className="notificationCount">{notificationCount}</div>
+              </div>
+            </Link>
+          </li>
+          <li>
+            <a
+              href="/login"
+              className={hoveredLink === 4 ? "active logout" : "logout"}
+              onMouseEnter={() => handleHover(4)}
+              onMouseLeave={handleLeave}
+              onClick={handleLogout}
+            >
+              Odjavi se
+            </a>
+          </li>
+        </div>
+
+        <div className="hamburger" onClick={toggleMenu}>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </nav>
+
+      {areNotificationsOpen && (
+        <NotificationsList
+          show={areNotificationsOpen}
+          handleClose={handleNotificationsClose}
+        />
+      )}
+    </>
   );
 };
 

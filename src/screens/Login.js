@@ -1,19 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../css/login.css";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosClient from "../http/axiosClient";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 
 export const Login = (props) => {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  const supabase = useSupabaseClient()
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8000/login", {
+      const response = await axiosClient.post("/login", {
         email: email,
         password: pass,
       });
@@ -22,10 +26,7 @@ export const Login = (props) => {
         // Extract the parent ID from the response
         const parentId = response.data.parentId;
         localStorage.setItem("parentId", parentId);
-        //console.log(parentId);
         setMessage("");
-
-        navigate("/homepage");
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
@@ -37,6 +38,20 @@ export const Login = (props) => {
       }
     }
   };
+
+  const googleSignIn = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        scopes: 'https://www.googleapis.com/auth/calendar'
+      }
+    }).then(() => setIsAuthenticated(true))
+      .catch((error) => {
+        alert("Error logging in to Google provider")
+        console.log(error)
+        return;
+      })
+  }
 
   return (
     <>
@@ -138,6 +153,12 @@ export const Login = (props) => {
           <div className="container">
             <button type="submit" className="login-button">
               Prijavi se
+            </button>
+            <p>
+              ili
+            </p>
+            <button className="google-button" onClick={googleSignIn}>
+              Prijavi se sa Google-om
             </button>
           </div>
         </form>

@@ -7,6 +7,7 @@ import GlobalContext from "../context/GlobalContext";
 import EventModal from "../components/EventModal";
 import Sidebar from "../components/SideBar";
 import MenuBarHP from "../components/MenuBarHP";
+import { validateGoogleToken } from "../http/tokenHelper";
 
 function HomePage() {
   const [currentMonth, setCurrentMonth] = useState(getMonth());
@@ -16,10 +17,15 @@ function HomePage() {
   useEffect(() => {
     try {
       const parentId = localStorage.getItem("parentId");
-      if (!parentId) {
+      const googleId = localStorage.getItem('googleId');
+      if (!parentId && !googleId) {
         window.location.replace("/");
       } else {
         setIsPristine(false);
+      }
+
+      if (validateGoogleToken()) {
+        return
       }
     } catch (err) {
       window.location.replace("/");
@@ -38,7 +44,7 @@ function HomePage() {
     <React.Fragment>
       {showEventModal && <EventModal />}
 
-      <div className=" flex flex-col">
+      <div className="flex flex-col">
         <MenuBarHP /> {/* Add the MenuBarHP component here */}
         <CalendarHeader />
         <div className="flex flex-1">

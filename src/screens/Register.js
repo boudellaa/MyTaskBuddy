@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "../css/register.css";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosClient from "../http/axiosClient";
 
 export const Register = (props) => {
   const [email, setEmail] = useState("");
@@ -21,7 +21,7 @@ export const Register = (props) => {
     }
 
     try {
-      const response = await axios.post("http://localhost:8000/register", {
+      const response = await axiosClient.post("/register", {
         firstname: firstname,
         lastname: lastname,
         email: email,

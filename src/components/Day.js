@@ -1,12 +1,15 @@
 import dayjs from "dayjs";
 import React, { useContext, useState, useEffect } from "react";
 import GlobalContext from "../context/GlobalContext";
+import axiosClient from "../http/axiosClient";
+import '../css/calendar.css'
 
 function Day({ day, rowIdx }) {
   const [dayEvents, setDayEvents] = useState([]);
   const {
     setDaySelected,
     setShowEventModal,
+    showEventModal,
     filteredEvents,
     setSelectedEvent,
   } = useContext(GlobalContext);
@@ -15,13 +18,14 @@ function Day({ day, rowIdx }) {
     const fetchTasks = async () => {
       try {
         if (localStorage.getItem("parentId")) {
-          const response = await fetch(
-            `http://localhost:8000/tasks?parentId=${localStorage.getItem(
+          const response = await axiosClient.get(
+            `/tasks?parentId=${localStorage.getItem(
               "parentId"
             )}`
           );
-          if (response.ok) {
-            const tasks = await response.json();
+
+          if (response.status === 200) {
+            const tasks = response.data;
             const events = tasks.filter(
               (task) =>
                 dayjs(task.date).format("YYYY-MM-DD") ===
@@ -38,8 +42,11 @@ function Day({ day, rowIdx }) {
       }
     };
 
+    if (showEventModal) {
+      return
+    }
     fetchTasks();
-  }, [day, dayEvents]);
+  }, [day, showEventModal]);
 
   function getCurrentDayClass() {
     const isCurrentDay = day.format("DD-MM-YY") === dayjs().format("DD-MM-YY");
@@ -54,8 +61,20 @@ function Day({ day, rowIdx }) {
     return daysInBosnian[dayIndex];
   }
 
+  const categoryColors = {
+    home: 'bg-green-300',
+    doctor: 'bg-blue-300',
+    school: 'bg-yellow-300',
+    free: 'bg-gray-300',
+    sport: 'bg-red-300',
+  };
+
+  const getTaskCategoryColor = (selectedEvent) => {
+    return categoryColors[selectedEvent?.category] || 'bg-gray-300';
+  }
+
   return (
-    <div className="custom-border flex flex-col">
+    <div className="singleDay flex flex-col">
       <header className="flex flex-col items-center">
         {rowIdx === 0 && (
           <p className="text-sm mt-1 text-black">{getLocalizedDayName()}</p>
@@ -77,26 +96,12 @@ function Day({ day, rowIdx }) {
             onClick={() => {
               setSelectedEvent(evt);
             }}
-            className={`bg-blue-200 p-1 mr-3 text-black text-sm font-bold rounded mb-1 truncate`}
+            className={`${getTaskCategoryColor(evt)} p-1 mr-3 text-black text-sm font-bold rounded mb-1 truncate`}
           >
             {evt.activity}
           </div>
         ))}
       </div>
-      <style>{`
-        .custom-border {
-          border: 0.5px solid black;
-          width: 150px;
-          height:150px;
-          background-color: white;
-        }
-
-        @media screen and (max-width: 768px) {
-          .custom-border {
-            width: 80px;
-          }
-        }
-      `}</style>
     </div>
   );
 }
